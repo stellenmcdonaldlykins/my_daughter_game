@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Daughter</title>
+
+  <style>
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at center, #111 0%, #050505 60%, #000 100%);
+      font-family: Georgia, serif;
+      color: #ddd;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    #title-screen {
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at center, #111 0%, #050505 55%, #000 100%);
+      color: #d8d2c8;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    }
+
+    #title-screen h1 {
+      font-size: 72px;
+      font-weight: normal;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      color: #d8d2c8;
+      text-shadow:
+        0 0 12px rgba(120,0,0,0.45),
+        0 0 30px rgba(0,0,0,0.9);
+      margin-bottom: 40px;
+    }
+
+    #begin-button,
+    #back-button {
+      background: rgba(10,10,10,0.95);
+      color: #887070;
+      border: 1px solid rgba(120,0,0,0.35);
+      font-family: Georgia, serif;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow:
+        0 0 18px rgba(120,0,0,0.18),
+        inset 0 0 18px rgba(120,0,0,0.12);
+    }
+
+    #begin-button {
+      padding: 14px 42px;
+      font-size: 18px;
+    }
+
+    #back-button {
+      padding: 8px 20px;
+      font-size: 13px;
+      letter-spacing: 2px;
+    }
+
+    #begin-button:hover,
+    #back-button:hover {
+      color: #d8d2c8;
+      box-shadow:
+        0 0 25px rgba(120,0,0,0.35),
+        inset 0 0 20px rgba(120,0,0,0.2);
+    }
+
+    .title-fade-out {
+      animation: titleFadeOut 0.8s ease forwards;
+    }
+
+    @keyframes titleFadeOut {
+      from { opacity: 1; }
+      to {
+        opacity: 0;
+        visibility: hidden;
+      }
+    }
+
+    .game-container {
+      width: 950px;
+      max-width: 95vw;
+      height: 92vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      position: relative;
+    }
+
+    .game-container::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at center,
+        transparent 40%,
+        rgba(0,0,0,0.45) 100%);
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    .image-frame {
+      width: 100%;
+      height: 520px;
+      flex-shrink: 0;
+      background: #050505;
+      overflow: hidden;
+      border-radius: 18px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      box-shadow:
+        0 0 40px rgba(0,0,0,0.9),
+        inset 0 0 80px rgba(0,0,0,0.9);
+    }
+
+    .image-frame::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        repeating-linear-gradient(
+          0deg,
+          rgba(255,255,255,0.015) 0px,
+          rgba(255,255,255,0.015) 1px,
+          transparent 1px,
+          transparent 2px
+        );
+      opacity: 0.25;
+      pointer-events: none;
+      mix-blend-mode: overlay;
+    }
+
+    #scene-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      filter:
+        brightness(0.72)
+        contrast(1.15)
+        saturate(0.8);
+      transform: scale(1.01);
+    }
+
+    .black-screen {
+      background: #000;
+    }
+
+    .black-screen #scene-image {
+      display: none;
+    }
+
+    .text-box {
+      width: 100%;
+      height: 230px;
+      flex-shrink: 0;
+      background:
+        linear-gradient(
+          to bottom,
+          rgba(12,12,12,0.97),
+          rgba(5,5,5,0.98)
+        );
+      padding: 28px;
+      box-sizing: border-box;
+      font-size: 24px;
+      line-height: 1.7;
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+      color: #d8d2c8;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow:
+        0 0 30px rgba(0,0,0,0.8),
+        inset 0 0 25px rgba(255,255,255,0.03);
+    }
+
+    .text-box::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border: 1px solid rgba(120, 0, 0, 0.25);
+      pointer-events: none;
+      box-shadow:
+        0 0 18px rgba(120,0,0,0.2),
+        inset 0 0 18px rgba(120,0,0,0.12);
+    }
+
+    #dialogue-text {
+      white-space: pre-line;
+      text-shadow:
+        0 0 6px rgba(255,255,255,0.04),
+        0 0 12px rgba(255,255,255,0.03);
+      overflow-y: auto;
+      padding-right: 10px;
+    }
+
+    .controls-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 14px;
+      flex-shrink: 0;
+    }
+
+    .hint {
+      font-size: 12px;
+      opacity: 0.4;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #887070;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .fade-out {
+      animation: fadeToBlack 1.5s ease forwards;
+    }
+
+    @keyframes fadeToBlack {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: rgba(255,255,255,0.015);
+      opacity: 0.03;
+      pointer-events: none;
+      animation: flicker 6s infinite;
+    }
+
+    @keyframes flicker {
+      0% { opacity: 0.02; }
+      5% { opacity: 0.05; }
+      10% { opacity: 0.015; }
+      15% { opacity: 0.04; }
+      100% { opacity: 0.02; }
+    }
+
+    #damage-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 999;
+      opacity: 0;
+      background:
+        radial-gradient(circle at center,
+          rgba(255,0,0,0) 35%,
+          rgba(120,0,0,0.18) 70%,
+          rgba(255,0,0,0.4) 100%);
+      transition: opacity 0.45s ease;
+    }
+
+    #damage-overlay.active {
+      opacity: 1;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="damage-overlay"></div>
+
+  <div id="title-screen">
+    <h1>My Daughter</h1>
+    <button id="begin-button">Begin</button>
+  </div>
+
+  <div class="game-container hidden" id="game-container">
+    <div class="image-frame" id="image-frame">
+      <img id="scene-image" src="Visual8.png" alt="Scene Image">
+    </div>
+
+    <div class="text-box">
+      <div id="dialogue-text"></div>
+
+      <div class="controls-row">
+        <button id="back-button">Back</button>
+        <div class="hint">Click or press SPACE</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const scenes = [
+      {
+        image: "Visual8.png",
+        text: [
+          "She came to me from the walls.",
+          "Not from flesh.",
+          "Not from man.",
+          "But from behind the wallpaper.",
+          "I heard her before I saw her.",
+          "Soft.",
+          "Wet.",
+          "A slow thumping through the walls of the house, like blood moving through buried veins.",
+          "The church women said grief had made me neglect my home.",
+          "Maybe they were right.",
+          "But grief is holy too.",
+          "And loneliness can make even rot feel merciful."
+        ]
+      },
+
+      {
+        image: "Visual1.png",
+        text: [
+          "The nursery was where it all began.",
+          "The walls had blackened and rotted, wet with moisture that clung to the wallpaper and gathered in the corners of the room.",
+          "Rings of spores bloomed across the wallpaper in dark spreading circles.",
+          "The walls had started to crack beneath the pressure of something growing underneath them.",
+          "I heard her calling to me from there.",
+          "When I peeled back the wallpaper, there she was."
+        ]
+      },
+
+      {
+        image: "Visual2.png",
+        text: [
+          "Small limbs curled inside the dark growth.",
+          "A face still forming.",
+          "Eyes sealed shut beneath translucent skin.",
+          "My daughter.",
+          "God had returned her to me.",
+          "Not as punishment.",
+          "As a test."
+        ]
+      },
+
+      {
+        image: "Visual3.png",
+        text: [
+          "I knew what the others would say.",
+          "That something born from rot could not be touched by God.",
+          "That no good thing could come from a house like mine.",
+          "That grief had driven me toward blasphemy.",
+          "They would have torn the walls open.",
+          "Burned the nursery.",
+          "Burned her with it.",
+          "But Abraham was tested too.",
+          "Faith demands sacrifice.",
+          "Faith demands obedience.",
+          "If the Lord placed this child in my hands, then it was my duty to shape her correctly.",
+          "To cleanse whatever wrongness lived inside her.",
+          "To cut away the darkness clinging to her flesh.",
+          "To guide her toward the shape God intended.",
+          "To remake her in His image."
+        ]
+      },
+
+      {
+        blackScreen: true,
+        text: [
+          "She learned quickly."
+        ]
+      },
+
+      {
+        image: "Visual4.png",
+        text: [
+          "Like a child learning language, she copied me before she understood me.",
+          "She folded her misshapen hands when I prayed.",
+          "She watched me with those pale, glossy eyes.",
+          "She repeated almost every word I spoke.",
+          "But her body refused imitation.",
+          "Sharp protrusions split through her skin in uneven clusters, quill-like and rigid.",
+          "Her skin warped around them in tight swollen ridges, pulling her body permanently to one side as though something inside her was still growing incorrectly.",
+          "Nothing about her ever remained symmetrical.",
+          "One shoulder sat higher than the other.",
+          "Her spine curved unnaturally beneath her skin.",
+          "Her whole body looked strained against itself.",
+          "Her lips never fully formed, leaving rows of dull uneven teeth permanently exposed.",
+          "Her voice came from deep within her chest, thick and wet like air bubbling through drowned lungs.",
+          "Sometimes she forgot how many fingers belonged on each hand.",
+          "Sometimes I watched new ones writhe beneath the skin before forcing themselves outward."
+        ]
+      },
+
+      {
+        image: "Visual5.png",
+        text: [
+          "And so, I corrected her.",
+          "Again.",
+          "And again.",
+          "And again.",
+          "At first, she allowed it.",
+          "I scrubbed black spores from the folds of her skin until the bathwater darkened around her.",
+          "I stitched and pinned loose flesh into place as her features shifted beneath my hands.",
+          "I cut away the spikes protruding from her skin before they could fully harden.",
+          "But her body refused permanence.",
+          "Every growth returned sharper than before.",
+          "Harder.",
+          "Longer.",
+          "The flesh around them swollen and split open from the pressure.",
+          "I forced her into dresses she could barely fit inside, damp seams stretching around the movement beneath her skin.",
+          "No matter how tightly I buttoned them, something inside her kept trying to emerge.",
+          "Still she changed.",
+          "Not into my daughter.",
+          "Into something that resisted me.",
+          "Something that refused the shape I gave it."
+        ]
+      },
+
+      {
+        image: "Visual6.png",
+        text: [
+          "I prayed harder.",
+          "I begged the Lord to free her flesh from the darkness that had shaped it.",
+          "I anointed her forehead with oil.",
+          "I pressed trembling hands against her skin and prayed for deliverance.",
+          "I asked God to make her pure again.",
+          "I told her no soul was beyond redemption.",
+          "That the Lord corrects those He loves.",
+          "That suffering was the doorway through which grace entered the body.",
+          "I told her rebellion was sin.",
+          "That temptation wears many faces.",
+          "That the world devours those who abandon God’s design.",
+          "I warned her what would happen if she continued like this.",
+          "Still she disobeyed.",
+          "Still she pulled further away from me every day.",
+          "Her body grew stranger.",
+          "Less like a child.",
+          "Less human every day."
+        ]
+      },
+
+      {
+        image: "Visual7.png",
+        text: [
+          "And on my final night, I woke to find the house pulsing like the day she was born.",
+          "The wallpaper trembled softly as dark veins throbbed beneath it, carrying something warm back toward the empty nursery.",
+          "She stood at the foot of my bed.",
+          "Taller now.",
+          "Her body shifted softly beneath the dim light, as though it could no longer decide what shape to hold.",
+          "Yet her thorns looked even sharper, almost metallic.",
+          "Not my daughter anymore.",
+          "Not even pretending to be.",
+          "I do not remember who struck first.",
+          "Only the screaming.",
+          "The thrashing.",
+          "The warmth of blood spreading between us.",
+          "And as she tore into me, I realized this was the closest we had ever been.",
+          "Closer than prayer.",
+          "Closer than birth.",
+          "So close I could feel her pulse moving through me."
+        ]
+      },
+
+      {
+        blackScreen: true,
+        text: [
+          "And for the first time,",
+          "I understood what she was."
+        ]
+      }
+    ];
+
+    const damageLines = [
+      "Only the screaming.",
+      "The thrashing.",
+      "The warmth of blood spreading between us.",
+      "And as she tore into me, I realized this was the closest we had ever been.",
+      "Closer than prayer.",
+      "Closer than birth.",
+      "So close I could feel her pulse moving through me."
+    ];
+
+    let currentScene = 0;
+    let currentLine = 0;
+    let isTyping = false;
+    let typingInterval;
+    let currentText = "";
+    let currentChar = 0;
+    let gameStarted = false;
+
+    const typingSpeed = 28;
+
+    const titleScreen = document.getElementById("title-screen");
+    const beginButton = document.getElementById("begin-button");
+    const gameContainer = document.getElementById("game-container");
+
+    const imageFrame = document.getElementById("image-frame");
+    const sceneImage = document.getElementById("scene-image");
+    const dialogueText = document.getElementById("dialogue-text");
+    const textBox = document.querySelector(".text-box");
+    const backButton = document.getElementById("back-button");
+
+    const damageOverlay = document.getElementById("damage-overlay");
+
+    function triggerDamageEffect() {
+      damageOverlay.classList.remove("active");
+
+      void damageOverlay.offsetWidth;
+
+      damageOverlay.classList.add("active");
+
+      setTimeout(() => {
+        damageOverlay.classList.remove("active");
+      }, 220);
+    }
+
+    function updateVisual(shouldFade = true) {
+      if (scenes[currentScene].blackScreen) {
+        imageFrame.classList.add("black-screen");
+        sceneImage.style.display = "none";
+        sceneImage.removeAttribute("src");
+      } else {
+        imageFrame.classList.remove("black-screen");
+        sceneImage.style.display = "block";
+        sceneImage.src = scenes[currentScene].image;
+      }
+
+      if (shouldFade) {
+        imageFrame.classList.remove("fade-in");
+        void imageFrame.offsetWidth;
+        imageFrame.classList.add("fade-in");
+      } else {
+        imageFrame.classList.remove("fade-in");
+      }
+    }
+
+    function typeLine() {
+      clearInterval(typingInterval);
+
+      currentText = scenes[currentScene].text[currentLine];
+
+      if (
+        currentScene === 8 &&
+        damageLines.includes(currentText)
+      ) {
+        triggerDamageEffect();
+      }
+
+      currentChar = 0;
+      dialogueText.textContent = "";
+      isTyping = true;
+
+      typingInterval = setInterval(() => {
+        dialogueText.textContent += currentText[currentChar];
+        currentChar++;
+
+        if (currentChar >= currentText.length) {
+          clearInterval(typingInterval);
+          isTyping = false;
+        }
+      }, typingSpeed);
+    }
+
+    function skipTyping() {
+      clearInterval(typingInterval);
+      dialogueText.textContent = currentText;
+      isTyping = false;
+    }
+
+    function resetToTitle() {
+      gameStarted = false;
+      currentScene = 0;
+      currentLine = 0;
+
+      clearInterval(typingInterval);
+      isTyping = false;
+
+      dialogueText.textContent = "";
+
+      gameContainer.classList.add("hidden");
+      gameContainer.classList.remove("fade-out");
+
+      titleScreen.style.display = "flex";
+      titleScreen.classList.remove("title-fade-out");
+
+      updateVisual(false);
+    }
+
+    function advanceDialogue() {
+      if (!gameStarted) return;
+
+      if (isTyping) {
+        skipTyping();
+        return;
+      }
+
+      currentLine++;
+
+      if (currentLine >= scenes[currentScene].text.length) {
+        currentScene++;
+        currentLine = 0;
+
+        if (currentScene >= scenes.length) {
+          gameContainer.classList.add("fade-out");
+
+          setTimeout(() => {
+            resetToTitle();
+          }, 1500);
+
+          return;
+        }
+
+        updateVisual(true);
+      }
+
+      typeLine();
+    }
+
+    function goBack(event) {
+      if (event) {
+        event.stopPropagation();
+      }
+
+      if (!gameStarted) return;
+
+      clearInterval(typingInterval);
+      isTyping = false;
+
+      currentLine--;
+
+      if (currentLine < 0) {
+        currentScene--;
+
+        if (currentScene < 0) {
+          resetToTitle();
+          return;
+        }
+
+        currentLine = scenes[currentScene].text.length - 1;
+        updateVisual(true);
+      }
+
+      currentText = scenes[currentScene].text[currentLine];
+      dialogueText.textContent = currentText;
+    }
+
+    beginButton.addEventListener("click", function() {
+      gameStarted = true;
+
+      titleScreen.classList.add("title-fade-out");
+
+      setTimeout(() => {
+        titleScreen.style.display = "none";
+
+        gameContainer.classList.remove("hidden");
+        gameContainer.classList.remove("fade-out");
+
+        updateVisual(false);
+        typeLine();
+      }, 800);
+    });
+
+    textBox.addEventListener("click", advanceDialogue);
+
+    backButton.addEventListener("click", goBack);
+
+    document.addEventListener("keydown", function(event) {
+      if (event.code === "Space") {
+        event.preventDefault();
+
+        if (!gameStarted) {
+          beginButton.click();
+        } else {
+          advanceDialogue();
+        }
+      }
+
+      if (event.code === "ArrowLeft") {
+        event.preventDefault();
+        goBack();
+      }
+    });
+  </script>
+</body>
+</html>
