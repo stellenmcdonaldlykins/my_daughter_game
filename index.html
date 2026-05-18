@@ -300,7 +300,7 @@
 
   <div class="game-container hidden" id="game-container">
     <div class="image-frame" id="image-frame">
-      <img id="scene-image" src="Visual8.png" alt="Scene Image">
+      <img id="scene-image" src="" alt="Scene Image">
     </div>
 
     <div class="text-box">
@@ -518,6 +518,15 @@
 
     const damageOverlay = document.getElementById("damage-overlay");
 
+    function preloadImages() {
+      scenes.forEach(scene => {
+        if (!scene.blackScreen && scene.image) {
+          const img = new Image();
+          img.src = scene.image;
+        }
+      });
+    }
+
     function triggerDamageEffect() {
       damageOverlay.classList.remove("active");
 
@@ -531,23 +540,38 @@
     }
 
     function updateVisual(shouldFade = true) {
-      if (scenes[currentScene].blackScreen) {
+      const scene = scenes[currentScene];
+
+      imageFrame.classList.remove("fade-in");
+
+      if (scene.blackScreen) {
         imageFrame.classList.add("black-screen");
         sceneImage.style.display = "none";
         sceneImage.removeAttribute("src");
-      } else {
-        imageFrame.classList.remove("black-screen");
-        sceneImage.style.display = "block";
-        sceneImage.src = scenes[currentScene].image;
+
+        if (shouldFade) {
+          void imageFrame.offsetWidth;
+          imageFrame.classList.add("fade-in");
+        }
+
+        return;
       }
 
-      if (shouldFade) {
-        imageFrame.classList.remove("fade-in");
-        void imageFrame.offsetWidth;
-        imageFrame.classList.add("fade-in");
-      } else {
-        imageFrame.classList.remove("fade-in");
-      }
+      imageFrame.classList.remove("black-screen");
+      sceneImage.style.display = "block";
+
+      const tempImage = new Image();
+
+      tempImage.onload = function() {
+        sceneImage.src = scene.image;
+
+        if (shouldFade) {
+          void imageFrame.offsetWidth;
+          imageFrame.classList.add("fade-in");
+        }
+      };
+
+      tempImage.src = scene.image;
     }
 
     function typeLine() {
@@ -659,6 +683,8 @@
       currentText = scenes[currentScene].text[currentLine];
       dialogueText.textContent = currentText;
     }
+
+    preloadImages();
 
     beginButton.addEventListener("click", function() {
       gameStarted = true;
